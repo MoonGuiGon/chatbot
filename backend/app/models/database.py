@@ -52,7 +52,7 @@ class Message(Base):
     conversation_id = Column(Integer, ForeignKey("conversations.id"), nullable=False)
     role = Column(String(20), nullable=False)  # 'user' or 'assistant'
     content = Column(Text, nullable=False)
-    metadata = Column(JSON)  # Sources, steps, etc.
+    message_metadata = Column(JSON)  # Sources, steps, etc.
     created_at = Column(DateTime, default=datetime.utcnow)
 
     # Relationships
@@ -98,7 +98,7 @@ class KnowledgeEntry(Base):
     id = Column(Integer, primary_key=True, index=True)
     query_pattern = Column(Text, nullable=False)
     answer = Column(Text, nullable=False)
-    metadata = Column(JSON)  # Context, domain, etc.
+    entry_metadata = Column(JSON)  # Context, domain, etc.
     confidence_score = Column(Integer, default=0)
     usage_count = Column(Integer, default=0)
     created_at = Column(DateTime, default=datetime.utcnow)

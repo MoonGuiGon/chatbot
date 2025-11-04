@@ -1,14 +1,13 @@
 """
 LangGraph State Definition
 """
-from typing import TypedDict, List, Dict, Any, Optional, Annotated
-from langgraph.graph import add_messages
+from typing import TypedDict, List, Dict, Any, Optional
 
 
 class AgentState(TypedDict):
     """State for the agent graph"""
     # Messages
-    messages: Annotated[List[Dict[str, str]], add_messages]
+    messages: List[Dict[str, str]]
 
     # Query analysis
     query: str

@@ -101,7 +101,7 @@ def _add_to_knowledge_base(db, message, improved_response):
                 entry = KnowledgeEntry(
                     query_pattern=user_msg.content,
                     answer=improved_response,
-                    metadata=message.metadata or {},
+                    entry_metadata=message.message_metadata or {},
                     confidence_score=1,
                     usage_count=1
                 )

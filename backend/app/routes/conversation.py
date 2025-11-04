@@ -68,7 +68,7 @@ def get_conversation(conversation_id):
                         "id": msg.id,
                         "role": msg.role,
                         "content": msg.content,
-                        "metadata": msg.metadata,
+                        "metadata": msg.message_metadata,
                         "created_at": msg.created_at.isoformat()
                     }
                     for msg in messages

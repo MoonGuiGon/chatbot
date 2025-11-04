@@ -23,7 +23,7 @@ class DocumentEmbedding(Base):
     id = Column(Integer, primary_key=True)
     content = Column(Text, nullable=False)
     embedding = Column(Vector(768))  # Adjust dimension based on your embedding model
-    metadata = Column(JSON)
+    doc_metadata = Column(JSON)
     summary = Column(Text)  # Vision model generated summary
     screenshot_path = Column(String(500))  # Path to screenshot
 
@@ -72,7 +72,7 @@ class PgVectorService:
                 query = session.query(
                     DocumentEmbedding.id,
                     DocumentEmbedding.content,
-                    DocumentEmbedding.metadata,
+                    DocumentEmbedding.doc_metadata,
                     DocumentEmbedding.summary,
                     DocumentEmbedding.screenshot_path,
                     DocumentEmbedding.embedding.cosine_distance(query_embedding).label('distance')
@@ -82,7 +82,7 @@ class PgVectorService:
                 if filter_metadata:
                     for key, value in filter_metadata.items():
                         query = query.filter(
-                            DocumentEmbedding.metadata[key].astext == str(value)
+                            DocumentEmbedding.doc_metadata[key].astext == str(value)
                         )
 
                 # Order by similarity and limit
@@ -93,7 +93,7 @@ class PgVectorService:
                     doc = {
                         'id': result.id,
                         'content': result.content,
-                        'metadata': result.metadata or {},
+                        'metadata': result.doc_metadata or {},
                         'summary': result.summary,
                         'screenshot_path': result.screenshot_path,
                         'distance': float(result.distance)
@@ -123,7 +123,7 @@ class PgVectorService:
                 doc = DocumentEmbedding(
                     content=content,
                     embedding=embedding,
-                    metadata=metadata,
+                    doc_metadata=metadata,
                     summary=summary,
                     screenshot_path=screenshot_path
                 )
@@ -151,7 +151,7 @@ class PgVectorService:
                     doc_obj = DocumentEmbedding(
                         content=doc['content'],
                         embedding=doc['embedding'],
-                        metadata=doc.get('metadata', {}),
+                        doc_metadata=doc.get('metadata', {}),
                         summary=doc.get('summary'),
                         screenshot_path=doc.get('screenshot_path')
                     )
