@@ -35,11 +35,15 @@ def create_app():
 
     # Initialize services
     from app.services.database_service import db_service, mongodb_service
-    from app.services.vector_service import vector_service
+    from app.services.pgvector_service import pgvector_service
+    from app.services.ontology_service import ontology_service
+    from app.services.cache_service import cache_service
 
     db_service.initialize()
     mongodb_service.initialize()
-    vector_service.initialize()
+    pgvector_service.initialize()
+    ontology_service.initialize()
+    cache_service.initialize()
 
     # Register blueprints
     from app.routes.chat import chat_bp

@@ -21,9 +21,17 @@ class Settings(BaseSettings):
     llm_embedding_model: str = ""
     llm_vision_model: str = ""
 
-    # VectorDB
-    vectordb_type: str = "chroma"
+    # VectorDB (pgvector)
+    vectordb_type: str = "pgvector"
     vectordb_path: str = "./vectordb_data"
+
+    # Neo4j (OntologyDB)
+    neo4j_uri: str = "bolt://localhost:7687"
+    neo4j_username: str = "neo4j"
+    neo4j_password: str = ""
+
+    # Redis (Cache)
+    redis_url: str = "redis://localhost:6379"
 
     # Flask
     flask_env: str = "development"

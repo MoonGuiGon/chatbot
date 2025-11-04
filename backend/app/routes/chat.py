@@ -4,7 +4,6 @@ Chat API routes
 from flask import Blueprint, request, jsonify, Response, stream_with_context
 import json
 import logging
-from datetime import datetime
 
 from app.agents.chatbot_agent import chatbot_agent
 from app.services.database_service import db_service
