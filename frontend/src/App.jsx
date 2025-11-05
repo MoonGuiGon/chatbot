@@ -24,12 +24,12 @@ import {
 } from '@mui/icons-material'
 import { Toaster } from 'react-hot-toast'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Sidebar } from './components/Chat/Sidebar'
-import { ChatArea } from './components/Chat/ChatArea'
-import { EnhancedChatInput } from './components/Chat/EnhancedChatInput'
-import { SettingsDialog } from './components/Settings/SettingsDialog'
-import { AnalyticsDashboard } from './components/Dashboard/AnalyticsDashboard'
-import { useChatStore } from './store/chatStore'
+import { Sidebar } from './components/Chat/Sidebar.tsx'
+import { ChatArea } from './components/Chat/ChatArea.tsx'
+import { EnhancedChatInput } from './components/Chat/EnhancedChatInput.jsx'
+import { SettingsDialog } from './components/Settings/SettingsDialog.tsx'
+import { AnalyticsDashboard } from './components/Dashboard/AnalyticsDashboard.jsx'
+import { useChatStore } from './store/chatStore.ts'
 
 // Enhanced theme with modern design
 const theme = createTheme({

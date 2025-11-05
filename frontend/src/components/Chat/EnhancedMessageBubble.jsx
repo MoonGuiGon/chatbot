@@ -191,13 +191,20 @@ export const EnhancedMessageBubble = ({ message }) => {
         )}
 
         <Paper
-          elevation={isUser ? 1 : 3}
+          elevation={isUser ? 0 : 2}
           sx={{
             maxWidth: '75%',
-            p: 2.5,
-            backgroundColor: isUser ? 'primary.light' : 'background.paper',
-            borderRadius: 3,
+            p: 3,
+            background: isUser
+              ? 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)'
+              : 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
+            color: isUser ? '#fff' : 'text.primary',
+            borderRadius: 4,
             position: 'relative',
+            border: isUser ? 'none' : '1px solid rgba(99, 102, 241, 0.1)',
+            boxShadow: isUser
+              ? '0 4px 12px rgba(99, 102, 241, 0.3)'
+              : '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
             '&::before': !isUser
               ? {
                   content: '""',
@@ -209,7 +216,7 @@ export const EnhancedMessageBubble = ({ message }) => {
                   borderTop: '8px solid transparent',
                   borderBottom: '8px solid transparent',
                   borderRight: '8px solid',
-                  borderRightColor: 'background.paper',
+                  borderRightColor: '#ffffff',
                 }
               : {},
           }}

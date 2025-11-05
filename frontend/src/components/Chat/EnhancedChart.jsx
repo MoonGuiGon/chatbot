@@ -39,15 +39,18 @@ import {
 import { motion } from 'framer-motion'
 import { saveAs } from 'file-saver'
 
+// Modern vibrant color palette (inspired by the image)
 const COLORS = [
-  '#1976d2',
-  '#dc004e',
-  '#2e7d32',
-  '#f57c00',
-  '#7b1fa2',
-  '#0288d1',
-  '#c62828',
-  '#558b2f',
+  '#06b6d4', // Cyan
+  '#f59e0b', // Amber
+  '#eab308', // Yellow
+  '#3b82f6', // Blue
+  '#8b5cf6', // Purple
+  '#ec4899', // Pink
+  '#ef4444', // Red
+  '#10b981', // Emerald
+  '#06b6d4', // Cyan (repeat for more data)
+  '#d946ef', // Fuchsia
 ]
 
 export const EnhancedChart = ({ data, type = 'line', title, xKey, yKey, height = 300 }) => {
@@ -208,11 +211,12 @@ export const EnhancedChart = ({ data, type = 'line', title, xKey, yKey, height =
       sx={{ my: 2 }}
     >
       <Paper
-        variant="outlined"
+        elevation={2}
         sx={{
-          p: 2,
-          borderRadius: 3,
-          backgroundColor: '#fafafa',
+          p: 3,
+          borderRadius: 4,
+          background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
+          border: '1px solid rgba(99, 102, 241, 0.1)',
         }}
       >
         <Box
@@ -220,18 +224,38 @@ export const EnhancedChart = ({ data, type = 'line', title, xKey, yKey, height =
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
-            mb: 2,
+            mb: 3,
           }}
         >
-          <Typography variant="subtitle2" sx={{ fontWeight: 600, display: 'flex', alignItems: 'center' }}>
-            {type === 'line' && <ShowChart sx={{ mr: 1, fontSize: 18 }} />}
-            {type === 'bar' && <BarChartIcon sx={{ mr: 1, fontSize: 18 }} />}
-            {type === 'pie' && <PieChartIcon sx={{ mr: 1, fontSize: 18 }} />}
-            {type === 'area' && <Timeline sx={{ mr: 1, fontSize: 18 }} />}
+          <Typography
+            variant="h6"
+            sx={{
+              fontWeight: 700,
+              display: 'flex',
+              alignItems: 'center',
+              color: 'text.primary',
+              letterSpacing: '-0.02em',
+            }}
+          >
+            {type === 'line' && <ShowChart sx={{ mr: 1.5, fontSize: 24, color: 'primary.main' }} />}
+            {type === 'bar' && <BarChartIcon sx={{ mr: 1.5, fontSize: 24, color: 'primary.main' }} />}
+            {type === 'pie' && <PieChartIcon sx={{ mr: 1.5, fontSize: 24, color: 'primary.main' }} />}
+            {type === 'area' && <Timeline sx={{ mr: 1.5, fontSize: 24, color: 'primary.main' }} />}
             {title || '차트'}
           </Typography>
 
-          <ButtonGroup size="small" variant="outlined">
+          <ButtonGroup size="small" variant="outlined" sx={{
+            boxShadow: 'none',
+            '& .MuiButton-root': {
+              borderColor: 'rgba(99, 102, 241, 0.3)',
+              color: 'primary.main',
+              fontWeight: 600,
+              '&:hover': {
+                borderColor: 'primary.main',
+                backgroundColor: 'primary.light',
+              }
+            }
+          }}>
             <Tooltip title="PNG 다운로드">
               <Button onClick={handleDownloadPNG} startIcon={<Download />}>
                 PNG
@@ -250,8 +274,21 @@ export const EnhancedChart = ({ data, type = 'line', title, xKey, yKey, height =
         </Box>
 
         {/* Data summary */}
-        <Box sx={{ mt: 2, pt: 2, borderTop: '1px solid', borderColor: 'divider' }}>
-          <Typography variant="caption" color="text.secondary">
+        <Box sx={{
+          mt: 3,
+          pt: 2,
+          borderTop: '1px solid rgba(99, 102, 241, 0.1)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 1,
+        }}>
+          <Box sx={{
+            width: 8,
+            height: 8,
+            borderRadius: '50%',
+            backgroundColor: 'success.main',
+          }} />
+          <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 500 }}>
             데이터 포인트: {data?.length || 0}개
           </Typography>
         </Box>

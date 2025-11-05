@@ -3,7 +3,8 @@
  */
 import React, { useEffect, useRef } from 'react'
 import { Box, Container } from '@mui/material'
-import { MessageBubble } from './MessageBubble'
+// @ts-ignore - JSX component
+import { EnhancedMessageBubble } from './EnhancedMessageBubble'
 import { ProgressIndicator } from './ProgressIndicator'
 import { useChatStore } from '../../store/chatStore'
 
@@ -26,7 +27,7 @@ export const ChatArea: React.FC = () => {
     >
       <Container maxWidth="lg">
         {messages.map((message) => (
-          <MessageBubble key={message.id} message={message} />
+          <EnhancedMessageBubble key={message.id} message={message} />
         ))}
         <ProgressIndicator steps={currentProgress} show={isStreaming} />
         <div ref={messagesEndRef} />
