@@ -17,10 +17,10 @@ class VisionService:
     """Vision Model Service for analyzing document screenshots"""
 
     def __init__(self):
-        self.api_key = settings.llm_api_key
-        self.api_url = settings.llm_api_url
-        self.vision_model = settings.llm_vision_model
-        self.use_mock = not self.api_key or not self.api_url
+        self.vision_api_key = settings.vision_api_key
+        self.vision_api_url = settings.vision_api_url
+        self.vision_model_name = settings.vision_model_name
+        self.use_mock = not self.vision_api_key or not self.vision_api_url
 
         if self.use_mock:
             logger.info("Vision API not configured. Using mock responses.")
@@ -75,12 +75,12 @@ JSON 형식으로 응답하세요:
 
             # Call vision API
             headers = {
-                "Authorization": f"Bearer {self.api_key}",
+                "Authorization": f"Bearer {self.vision_api_key}",
                 "Content-Type": "application/json"
             }
 
             data = {
-                "model": self.vision_model,
+                "model": self.vision_model_name,
                 "messages": [
                     {
                         "role": "user",
@@ -99,7 +99,7 @@ JSON 형식으로 응답하세요:
             }
 
             response = requests.post(
-                f"{self.api_url}/chat/completions",
+                f"{self.vision_api_url}/chat/completions",
                 headers=headers,
                 json=data,
                 timeout=60

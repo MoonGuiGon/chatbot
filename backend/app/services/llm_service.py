@@ -17,15 +17,28 @@ class LLMService:
     """사내 LLM API 서비스 (OpenAI 호환)"""
 
     def __init__(self):
-        self.api_key = settings.llm_api_key
-        self.api_url = settings.llm_api_url
-        self.model_name = settings.llm_model_name
-        self.embedding_model = settings.llm_embedding_model
-        self.vision_model = settings.llm_vision_model
-        self.use_mock = not self.api_key or not self.api_url
+        # Chat Model (대화용)
+        self.chat_api_key = settings.chat_api_key
+        self.chat_api_url = settings.chat_api_url
+        self.chat_model_name = settings.chat_model_name
 
-        if self.use_mock:
-            logger.info("LLM API not configured. Using mock responses.")
+        # Embedding Model (벡터 임베딩용)
+        self.embedding_api_key = settings.embedding_api_key
+        self.embedding_api_url = settings.embedding_api_url
+        self.embedding_model_name = settings.embedding_model_name
+
+        # Vision Model (이미지 분석용)
+        self.vision_api_key = settings.vision_api_key
+        self.vision_api_url = settings.vision_api_url
+        self.vision_model_name = settings.vision_model_name
+
+        # Mock 모드 체크
+        self.use_mock_chat = not self.chat_api_key or not self.chat_api_url
+        self.use_mock_embedding = not self.embedding_api_key or not self.embedding_api_url
+        self.use_mock_vision = not self.vision_api_key or not self.vision_api_url
+
+        if self.use_mock_chat or self.use_mock_embedding or self.use_mock_vision:
+            logger.info("Some LLM APIs not configured. Using mock responses where needed.")
 
     def chat_completion(
         self,
@@ -34,17 +47,17 @@ class LLMService:
         temperature: float = 0.7,
         max_tokens: int = 2000
     ) -> Any:
-        """Chat completion"""
-        if self.use_mock:
+        """Chat completion (대화용)"""
+        if self.use_mock_chat:
             return self._mock_completion(messages, stream)
 
         headers = {
-            "Authorization": f"Bearer {self.api_key}",
+            "Authorization": f"Bearer {self.chat_api_key}",
             "Content-Type": "application/json"
         }
 
         data = {
-            "model": self.model_name,
+            "model": self.chat_model_name,
             "messages": messages,
             "temperature": temperature,
             "max_tokens": max_tokens,
@@ -53,10 +66,10 @@ class LLMService:
 
         try:
             if stream:
-                return self._stream_completion(headers, data)
+                return self._stream_completion(self.chat_api_url, headers, data)
             else:
                 response = requests.post(
-                    f"{self.api_url}/chat/completions",
+                    f"{self.chat_api_url}/chat/completions",
                     headers=headers,
                     json=data,
                     timeout=60
@@ -64,14 +77,14 @@ class LLMService:
                 response.raise_for_status()
                 return response.json()
         except Exception as e:
-            logger.error(f"LLM API error: {e}")
+            logger.error(f"Chat API error: {e}")
             return self._mock_completion(messages, stream)
 
-    def _stream_completion(self, headers: Dict, data: Dict) -> Iterator[str]:
+    def _stream_completion(self, api_url: str, headers: Dict, data: Dict) -> Iterator[str]:
         """Stream completion"""
         try:
             response = requests.post(
-                f"{self.api_url}/chat/completions",
+                f"{api_url}/chat/completions",
                 headers=headers,
                 json=data,
                 stream=True,
@@ -137,25 +150,25 @@ class LLMService:
             time.sleep(0.05)  # Simulate streaming delay
 
     def get_embedding(self, text: str) -> Optional[List[float]]:
-        """Get text embedding"""
-        if self.use_mock:
+        """Get text embedding (임베딩용)"""
+        if self.use_mock_embedding:
             # Return mock embedding (768 dimensions)
             import random
             return [random.random() for _ in range(768)]
 
         headers = {
-            "Authorization": f"Bearer {self.api_key}",
+            "Authorization": f"Bearer {self.embedding_api_key}",
             "Content-Type": "application/json"
         }
 
         data = {
-            "model": self.embedding_model,
+            "model": self.embedding_model_name,
             "input": text
         }
 
         try:
             response = requests.post(
-                f"{self.api_url}/embeddings",
+                f"{self.embedding_api_url}/embeddings",
                 headers=headers,
                 json=data,
                 timeout=30

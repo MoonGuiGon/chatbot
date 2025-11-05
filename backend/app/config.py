@@ -14,12 +14,20 @@ class Settings(BaseSettings):
     mongodb_db_name: str = "chatbot_db"
     postgres_uri: str = "postgresql://user:password@localhost:5432/chatbot_db"
 
-    # LLM Configuration
-    llm_api_key: str = ""
-    llm_api_url: str = ""
-    llm_model_name: str = ""
-    llm_embedding_model: str = ""
-    llm_vision_model: str = ""
+    # Chat Model Configuration (대화용)
+    chat_api_key: str = ""
+    chat_api_url: str = ""
+    chat_model_name: str = ""
+
+    # Embedding Model Configuration (벡터 임베딩용)
+    embedding_api_key: str = ""
+    embedding_api_url: str = ""
+    embedding_model_name: str = ""
+
+    # Vision Model Configuration (이미지 분석용)
+    vision_api_key: str = ""
+    vision_api_url: str = ""
+    vision_model_name: str = ""
 
     # VectorDB (pgvector)
     vectordb_type: str = "pgvector"
