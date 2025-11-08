@@ -28,9 +28,9 @@ scikit-learn==1.4.0
 sentence-transformers==2.3.1
 
 # Utilities
-pydantic==2.5.3
+pydantic>=2.7.4
 tenacity==8.2.3
-tiktoken==0.5.2
+tiktoken>=0.7
 requests==2.31.0
 
 # Development & Testing

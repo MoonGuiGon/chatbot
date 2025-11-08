@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   Box,
   Paper,
@@ -23,12 +23,58 @@ import {
   ExpandLess
 } from '@mui/icons-material';
 import ReactMarkdown from 'react-markdown';
-import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
+import remarkGfm from 'remark-gfm';
+import rehypeRaw from 'rehype-raw';
+import {
+  BarChart,
+  Bar,
+  LineChart,
+  Line,
+  PieChart,
+  Pie,
+  Cell,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer
+} from 'recharts';
 import { feedbackAPI } from '../../services/api';
 
 const MessageBubble = ({ message, isUser, onFeedback }) => {
   const [showSources, setShowSources] = useState(false);
   const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
+
+  // Content에서 JSON 코드 블록 추출 및 파싱
+  const parsedCharts = useMemo(() => {
+    if (!message.content || isUser) return [];
+
+    const charts = [];
+    // ```json ... ``` 패턴 찾기
+    const jsonBlockRegex = /```json\s*\n([\s\S]*?)\n```/g;
+    let match;
+
+    while ((match = jsonBlockRegex.exec(message.content)) !== null) {
+      try {
+        const jsonData = JSON.parse(match[1]);
+        if (jsonData.type && jsonData.data) {
+          charts.push(jsonData);
+        }
+      } catch (e) {
+        console.warn('Failed to parse JSON block:', e);
+      }
+    }
+
+    return charts;
+  }, [message.content, isUser]);
+
+  // Content에서 Markdown 표 제외하고 렌더링할 내용
+  const contentWithoutJsonBlocks = useMemo(() => {
+    if (!message.content) return '';
+    // JSON 블록 제거
+    return message.content.replace(/```json\s*\n[\s\S]*?\n```/g, '');
+  }, [message.content]);
 
   const handleFeedback = async (type) => {
     if (feedbackSubmitted) return;
@@ -93,59 +139,123 @@ const MessageBubble = ({ message, isUser, onFeedback }) => {
     );
   };
 
-  const renderChart = (chartData) => {
+  const renderChart = (chartData, idx) => {
     if (!chartData) return null;
 
     const { type, title, data } = chartData;
 
+    // 차트 데이터 변환
+    const chartDataFormatted = data.labels ? data.labels.map((label, labelIdx) => ({
+      name: label,
+      ...data.datasets.reduce((acc, dataset) => ({
+        ...acc,
+        [dataset.label]: dataset.data[labelIdx]
+      }), {})
+    })) : data.datasets[0].data.map((value, i) => ({
+      name: data.labels ? data.labels[i] : `Item ${i + 1}`,
+      value
+    }));
+
     if (type === 'bar') {
       return (
-        <Box sx={{ my: 2 }}>
-          <Typography variant="subtitle2" gutterBottom>
+        <Box key={idx} sx={{ my: 3, p: 2, bgcolor: 'background.default', borderRadius: 2 }}>
+          <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold', color: 'primary.main' }}>
             {title}
           </Typography>
-          <BarChart width={500} height={300} data={data.labels.map((label, idx) => ({
-            name: label,
-            ...data.datasets.reduce((acc, dataset, datasetIdx) => ({
-              ...acc,
-              [dataset.label]: dataset.data[idx]
-            }), {})
-          }))}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="name" />
-            <YAxis />
-            <Tooltip />
-            <Legend />
-            {data.datasets.map((dataset, idx) => (
-              <Bar key={idx} dataKey={dataset.label} fill={`hsl(${idx * 60}, 70%, 50%)`} />
-            ))}
-          </BarChart>
+          <ResponsiveContainer width="100%" height={350}>
+            <BarChart data={chartDataFormatted}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
+              <XAxis dataKey="name" tick={{ fontSize: 12 }} />
+              <YAxis tick={{ fontSize: 12 }} />
+              <Tooltip
+                contentStyle={{ backgroundColor: '#fff', border: '1px solid #ccc' }}
+                labelStyle={{ fontWeight: 'bold' }}
+              />
+              <Legend wrapperStyle={{ paddingTop: '20px' }} />
+              {data.datasets.map((dataset, datasetIdx) => (
+                <Bar
+                  key={datasetIdx}
+                  dataKey={dataset.label}
+                  fill={dataset.backgroundColor ? dataset.backgroundColor[0] || dataset.backgroundColor : `hsl(${datasetIdx * 120}, 70%, 50%)`}
+                  stroke={dataset.borderColor ? dataset.borderColor[0] || dataset.borderColor : undefined}
+                  strokeWidth={dataset.borderWidth || 0}
+                />
+              ))}
+            </BarChart>
+          </ResponsiveContainer>
         </Box>
       );
     }
 
     if (type === 'line') {
       return (
-        <Box sx={{ my: 2 }}>
-          <Typography variant="subtitle2" gutterBottom>
+        <Box key={idx} sx={{ my: 3, p: 2, bgcolor: 'background.default', borderRadius: 2 }}>
+          <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold', color: 'primary.main' }}>
             {title}
           </Typography>
-          <LineChart width={500} height={300} data={data.labels.map((label, idx) => ({
-            name: label,
-            ...data.datasets.reduce((acc, dataset) => ({
-              ...acc,
-              [dataset.label]: dataset.data[idx]
-            }), {})
-          }))}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="name" />
-            <YAxis />
-            <Tooltip />
-            <Legend />
-            {data.datasets.map((dataset, idx) => (
-              <Line key={idx} type="monotone" dataKey={dataset.label} stroke={`hsl(${idx * 60}, 70%, 50%)`} />
-            ))}
-          </LineChart>
+          <ResponsiveContainer width="100%" height={350}>
+            <LineChart data={chartDataFormatted}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
+              <XAxis dataKey="name" tick={{ fontSize: 12 }} />
+              <YAxis tick={{ fontSize: 12 }} />
+              <Tooltip
+                contentStyle={{ backgroundColor: '#fff', border: '1px solid #ccc' }}
+                labelStyle={{ fontWeight: 'bold' }}
+              />
+              <Legend wrapperStyle={{ paddingTop: '20px' }} />
+              {data.datasets.map((dataset, datasetIdx) => (
+                <Line
+                  key={datasetIdx}
+                  type="monotone"
+                  dataKey={dataset.label}
+                  stroke={dataset.borderColor || `hsl(${datasetIdx * 120}, 70%, 50%)`}
+                  fill={dataset.backgroundColor}
+                  strokeWidth={3}
+                  dot={{ r: 4 }}
+                  activeDot={{ r: 6 }}
+                />
+              ))}
+            </LineChart>
+          </ResponsiveContainer>
+        </Box>
+      );
+    }
+
+    if (type === 'pie') {
+      const COLORS = data.datasets[0].backgroundColor || [
+        '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'
+      ];
+
+      const pieData = data.labels.map((label, i) => ({
+        name: label,
+        value: data.datasets[0].data[i]
+      }));
+
+      return (
+        <Box key={idx} sx={{ my: 3, p: 2, bgcolor: 'background.default', borderRadius: 2 }}>
+          <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold', color: 'primary.main' }}>
+            {title}
+          </Typography>
+          <ResponsiveContainer width="100%" height={350}>
+            <PieChart>
+              <Pie
+                data={pieData}
+                cx="50%"
+                cy="50%"
+                labelLine={true}
+                label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                outerRadius={100}
+                fill="#8884d8"
+                dataKey="value"
+              >
+                {pieData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                ))}
+              </Pie>
+              <Tooltip />
+              <Legend />
+            </PieChart>
+          </ResponsiveContainer>
         </Box>
       );
     }
@@ -170,14 +280,56 @@ const MessageBubble = ({ message, isUser, onFeedback }) => {
           color: isUser ? 'primary.contrastText' : 'text.primary'
         }}
       >
-        {/* 메시지 내용 */}
-        <ReactMarkdown>{message.content}</ReactMarkdown>
+        {/* 메시지 내용 (JSON 블록 제외) */}
+        <ReactMarkdown
+          remarkPlugins={[remarkGfm]}
+          rehypePlugins={[rehypeRaw]}
+          components={{
+            table: ({ node, ...props }) => (
+              <TableContainer component={Paper} sx={{ my: 2, maxWidth: '100%', overflowX: 'auto' }}>
+                <Table size="small" {...props} />
+              </TableContainer>
+            ),
+            thead: ({ node, ...props }) => <TableHead {...props} />,
+            tbody: ({ node, ...props }) => <TableBody {...props} />,
+            tr: ({ node, ...props }) => <TableRow {...props} />,
+            th: ({ node, ...props }) => (
+              <TableCell
+                sx={{
+                  fontWeight: 'bold',
+                  bgcolor: 'action.hover',
+                  borderBottom: '2px solid',
+                  borderColor: 'divider'
+                }}
+                {...props}
+              />
+            ),
+            td: ({ node, ...props }) => (
+              <TableCell
+                sx={{
+                  borderBottom: '1px solid',
+                  borderColor: 'divider'
+                }}
+                {...props}
+              />
+            ),
+          }}
+        >
+          {contentWithoutJsonBlocks}
+        </ReactMarkdown>
 
-        {/* 표 렌더링 */}
+        {/* 표 렌더링 (legacy support) */}
         {message.tableData && renderTable(message.tableData)}
 
-        {/* 그래프 렌더링 */}
-        {message.chartData && renderChart(message.chartData)}
+        {/* 그래프 렌더링 (legacy support) */}
+        {message.chartData && renderChart(message.chartData, 0)}
+
+        {/* Content에서 추출한 차트들 렌더링 */}
+        {parsedCharts.length > 0 && (
+          <Box sx={{ mt: 2 }}>
+            {parsedCharts.map((chart, idx) => renderChart(chart, idx))}
+          </Box>
+        )}
 
         {/* 경고 메시지 */}
         {message.warnings && message.warnings.length > 0 && (
